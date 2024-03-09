@@ -21,6 +21,7 @@ def get_driver():
     options.add_argument(
         f"Accept={'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8'}")
     options.add_argument(f"Referer={'https://www.google.com/'}")
+    options.add_argument("--headless=new")
 
     # initialize the Chrome WebDriver with the specified options
     return webdriver.Chrome(options=options)

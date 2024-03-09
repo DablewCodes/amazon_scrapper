@@ -6,10 +6,11 @@ import time
 
 def main():
     queries_list = get_queries()
-    for query in queries_list:
+    for index, query in enumerate(queries_list):
         query_data = scrape_query_data(query)
         export_data(query, query_data)
-        time.sleep(2)
+        print("Scraped data for query {}: {}".format(index+1, query))
+        time.sleep(1)
 
 
 if __name__ == '__main__':
