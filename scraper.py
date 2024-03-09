@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import random
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.common.exceptions import TimeoutException
 from product import Product
 
 
@@ -31,8 +32,13 @@ def scrape_query_data(query: str) -> list:
     BASE_URL = "https://www.amazon.com/s?k={}"
 
     driver = get_driver()
+    driver.set_page_load_timeout(30)
 
-    driver.get(BASE_URL.format(query))
+    try:
+        driver.get(BASE_URL.format(query))
+    except TimeoutException:
+        print("Driver took too long to load the webpage, Check your internet connection and try again")
+        quit()
 
     query_page_html = driver.page_source
 
