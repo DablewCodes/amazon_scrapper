@@ -9,7 +9,7 @@ def main():
     for query in queries_list:
         query_data = scrape_query_data(query)
         export_data(query, query_data)
-        time.sleep(3)
+        time.sleep(2)
 
 
 if __name__ == '__main__':
