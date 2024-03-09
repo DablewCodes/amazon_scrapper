@@ -4,6 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException
 from product import Product
+import time
 
 
 def get_user_agents():
@@ -27,23 +28,9 @@ def get_driver():
     return webdriver.Chrome(options=options)
 
 
-def scrape_query_data(query: str) -> list:
-    query_data_list = []
-
-    BASE_URL = "https://www.amazon.com/s?k={}"
-
-    driver = get_driver()
-    driver.set_page_load_timeout(30)
-
-    try:
-        driver.get(BASE_URL.format(query))
-    except TimeoutException:
-        print("Driver took too long to load the webpage, Check your internet connection and try again")
-        quit()
-
-    query_page_html = driver.page_source
-
-    driver.close()
+def parse_page_html(query_page_html: str) -> list:
+    # Returns a list of all products and their details from a single page
+    query_page_data_list = []
 
     soup = BeautifulSoup(query_page_html, features="lxml")
 
@@ -86,6 +73,35 @@ def scrape_query_data(query: str) -> list:
 
         product = Product(product_title, product_total_reviews, product_price, product_img)
 
-        query_data_list.append(product)
+        query_page_data_list.append(product)
+
+    return query_page_data_list
+
+
+def scrape_query_data(query: str) -> list:
+    query_data_list = []
+
+    # BASE_URL = "https://www.amazon.com/s?k={}"
+    # When the page number is set to 1, it redirects to the default initial search page, so we can keep the page number parameter in the base url
+    BASE_URL = "https://www.amazon.com/s?k={}&page={}"
+
+    driver = get_driver()
+    driver.set_page_load_timeout(30)
+
+    # Loop for managing page number
+    for i in range(1, 21):
+        try:
+            driver.get(BASE_URL.format(query, i))
+        except TimeoutException:
+            print("Driver took too long to load the webpage, Check your internet connection and try again")
+            quit()
+
+        query_page_html = driver.page_source
+        query_page_data_list = parse_page_html(query_page_html)
+        query_data_list.extend(query_page_data_list)
+        print("Scraped page {} for query: {}".format(i, query))
+        time.sleep(random.randint(1, 10))
+
+    driver.close()
 
     return query_data_list
